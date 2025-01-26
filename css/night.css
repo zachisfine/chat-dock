@@ -1,0 +1,21 @@
+body {
+    background: #000000;
+}
+
+#container {
+    background: rgba(15, 20, 25, 0);
+    border-radius: .5em;
+}
+
+.pinned-message {
+    background: #008b01;
+    border-radius: .5em;
+}
+
+.atStreamer {
+    border-radius: .5em;
+}
+
+.moderator {
+    border-radius: .5em;
+}
