@@ -25,7 +25,7 @@ const htmlRegex = /(?<!src=")https?:\/\/[^\s]+(?![^<]*<\/img>)/g;
 const chatEL = document.getElementById("chat-container");
 // const timeStampCheck = document.getElementById("timeStampCheck");
 
-function createMessage(
+export function createMessage(
   messageID,
   messageContent,
   messageUsername,
@@ -105,11 +105,21 @@ function createMessage(
     messageElement.classList.add("moderator");
   }
 
+  // Check if the user is a subscriber, VIP, or gifter
+  const isSubscriber = senderBadges.includes("subscriber");
+  const isVIP = senderBadges.includes("vip");
+  const isGifter = senderBadges.some((badge) => badge.startsWith("sub_gifter"));
+
   // create span elements for timestamp, badges, username, and message
   const timestampSpan = document.createElement("span");
   const badgesSpan = document.createElement("span");
   const usernameSpan = document.createElement("span");
   const messageSpan = document.createElement("span");
+
+  // Add a class to dim the message text for non-subscribers, non-VIPs, and non-gifters
+  if (!isSubscriber && !isVIP && !isGifter) {
+    messageElement.classList.add("dimmed");
+  }
 
   // set the classes for the span elements
   timestampSpan.classList.add("timestamp");

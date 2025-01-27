@@ -20,6 +20,7 @@
 body {
     margin: 0;
     padding: 10px;
+    font-size: 16px;
 }
 
 #container {
@@ -87,6 +88,20 @@ body {
         opacity: 1;
     }
 }
+
+.message-item {
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+}
+
+.username, .message {
+    font-weight: bold; /* Make user names and message text bold */
+    color: inherit; /* Inherit the text color from the parent element */
+  }
+  
+  .badges img {
+    margin-right: 5px; /* Add some space between badges */
+  }
 
 .message-item .timestamp {
     display: none;
