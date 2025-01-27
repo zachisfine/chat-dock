@@ -80,6 +80,7 @@ export function createMessage(
   const messageElement = document.createElement("div");
   messageElement.id = messageID;
   messageElement.setAttribute("user-id", messageUserID);
+  messageElement.classList.add("message-item");
 
   // Convert both bot names and messageUsername to lowercase for case-insensitive comparison
   const lowercaseExcludedKickBots = excludedKickBots.map((botName) =>
@@ -126,6 +127,14 @@ export function createMessage(
   usernameSpan.classList.add("username");
   messageSpan.classList.add("message");
   badgesSpan.classList.add("badges");
+
+  // Create a container element to hold the timestamp, badges, and username
+  const headerContainer = document.createElement("div");
+  headerContainer.style.display = "flex";
+  headerContainer.style.alignItems = "center";
+
+  // Add the timestamp span to the header container
+  headerContainer.appendChild(timestampSpan);
 
 // Check if the message contains an "@" symbol
 if (messageContent.includes("@")) {
@@ -199,13 +208,25 @@ if (messageContent.includes("@")) {
       // Add the badgeImg to the badgeSpan
       badgesSpan.appendChild(badgeImg);
     }
+    headerContainer.appendChild(badgesSpan);
   }
+
+  headerContainer.appendChild(usernameSpan);
+
+  const messageContainer = document.createElement("div");
+
+  messageContainer.appendChild(headerContainer);
+  messageContainer.appendChild(messageSpan);
 
   // append the span elements to the message element
   messageElement.appendChild(timestampSpan);
   messageElement.appendChild(badgesSpan);
   messageElement.appendChild(usernameSpan);
   messageElement.appendChild(messageSpan);
+
+  if (senderBadges.length > 0) {
+    messageElement.appendChild(headerContainer);
+  }
 
   return messageElement;
 }

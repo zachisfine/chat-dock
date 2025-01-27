@@ -64,10 +64,9 @@ body {
 }
 
 .message-item {
-    padding: 10px;
-    border-bottom: 1px solid #ccc;
-    line-height: 1.6em; /* Increase the line height */
-    margin: 0 .1em -.40em .1em;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5em;
 }
 
 @keyframes fadeIn {
@@ -90,9 +89,10 @@ body {
     color: inherit; /* Inherit the text color from the parent element */
 }
 
-.badges img {
-    margin-right: 5px; /* Add some space between badges */
-}
+.badges {
+    display: flex;
+    align-items: center;
+  }
 
 .message-item .timestamp {
     display: block;
@@ -121,10 +121,10 @@ body {
     margin-bottom: .5em; /* Add extra spacing between username and message */
 }
 
-.message-item .username::after {
-    margin-left: 1px;
+.message-item > .username::after {
     content: ":";
-}
+    margin-left: 0.5px;
+  }
 
 .username::after {
     margin-left: 0.5px;
@@ -133,7 +133,8 @@ body {
 .message-item .message { 
     font-size: 0.9em; /* Decrease the font size */
     word-break: break-word;
-}
+    flex-grow: 1; /* Add this line to allow message to take up remaining space */
+  }
 
 .atStreamer {
     background-color: rgba(169, 71, 211, 0.4);
@@ -160,3 +161,40 @@ body {
 .commands {
     display: none;
 }
+
+.chat-message {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+  }
+  
+  .chat-message > * {
+    margin-right: 10px;
+  }
+  
+  .timestamp {
+    font-family: 'Courier Prime', monospace;
+    font-size: 0.9em;
+    color: inherit;
+    margin-right: 2em;
+  }
+  
+  .username {
+    font-weight: bold;
+    color: inherit;
+    margin-right: 1em;
+  }
+  
+  .message {
+    grid-column: 1 / -1;
+  }
+
+  .chat-message-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5em;
+  }
+
+  .chat-message-item {
+    display: contents;
+  }
