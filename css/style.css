@@ -112,6 +112,7 @@ body {
     max-width: 0.5em;
     margin-bottom: -2px;
     margin-right: 1px;
+    margin-left: 0.5em;
     filter: drop-shadow(0 0 1px rgba(0, 0, 0, 1));
 }
 
@@ -122,7 +123,7 @@ body {
 
 .message-item .username {
     font-weight: 900;
-    margin-right: .35em;
+    margin-right: 1em;
 }
 
 .message-item .username::after {
