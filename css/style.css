@@ -65,19 +65,10 @@ body {
 }
 
 .message-item {
-    display: block;
-    font-family: var(--font);
-    gap: .25em;
-    line-height: 1.4em;
-    text-shadow: 0 0 2px rgba(0, 0, 0, .95), -1px 1px rgba(0, 0, 0, 1);
-    animation: fadeIn .75s;
-    -webkit-animation: fadeIn .75s;
-    -moz-animation: fadeIn .75s;
-    -o-animation: fadeIn .75s;
-    -ms-animation: fadeIn .75s;
-    opacity: 1;
-    transition: opacity 0.5s;
-}
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+    line-height: 1.6em; /* Increase the line height */
+  }
 
 @keyframes fadeIn {
     0% {
@@ -103,15 +94,17 @@ body {
     margin-right: 5px; /* Add some space between badges */
   }
 
-.message-item .timestamp {
+  .message-item .timestamp {
     display: block;
     font-family: 'Courier Prime', monospace;
-    font-size: 1em;
+    font-size: 1em; /* Increase the font size */
     font-weight: 700;
     letter-spacing: -1px;
-    margin-right: 1em;
+    margin-right: 2em; /* Increase the right margin */
+  }
 
-}
+.message-item img { max-height: 0.8em; max-width: 0.8em; /* Add a max-width property */ }
+
 
 .message-item .badges img {
     min-height: 1em;
@@ -141,10 +134,9 @@ body {
     margin-left: 0.5px;
 }
 
-.message-item .message {
-    font-weight: 900;
-    word-break: break-word;
-}
+.message-item .message { font-size: 0.9em; /* Decrease the font size */ word-break: break-word; }
+
+
 
 .atStreamer {
     background-color: rgba(169, 71, 211, 0.4);
