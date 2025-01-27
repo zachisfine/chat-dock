@@ -131,7 +131,7 @@ body {
 }
 
 .message-item .message { 
-    font-size: 0.9em; /* Decrease the font size */
+    font-size: 1.2em; /* Decrease the font size */
     word-break: break-word;
     flex-grow: 1; /* Add this line to allow message to take up remaining space */
   }
