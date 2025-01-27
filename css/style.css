@@ -104,19 +104,19 @@ body {
   }
 
 .message-item .timestamp {
-    display: none;
+    display: block;
     font-family: 'Courier Prime', monospace;
-    font-size: .8em;
+    font-size: 1em;
     font-weight: 700;
     letter-spacing: -1px;
-    margin-right: 4px;
+    margin-right: 1em;
 
 }
 
 .message-item .badges img {
     min-height: 1em;
-    max-height: 1em;
-    max-width: 1em;
+    max-height: 0.8em;
+    max-width: 0.5em;
     margin-bottom: -2px;
     margin-right: 1px;
     filter: drop-shadow(0 0 1px rgba(0, 0, 0, 1));
@@ -124,6 +124,7 @@ body {
 
 .message-item .badges img:last-of-type {
     margin-right: 4px;
+    max-height: 0.8em;
 }
 
 .message-item .username {
@@ -134,6 +135,10 @@ body {
 .message-item .username::after {
     margin-left: 1px;
     content: ":";
+}
+
+.username::after {
+    margin-left: 0.5px;
 }
 
 .message-item .message {
