@@ -6,7 +6,7 @@ import {
 } from "./chat.js";
 
 const urlParams = new URLSearchParams(window.location.search);
-export const kickChannel = urlParams.get("kick") || "crystalgrace";
+export const kickChannel = urlParams.get("kick") || "queengloria";
 export let subBadges;
 export let userId;
 
