@@ -181,14 +181,6 @@ export function createMessage(
   messageSpan.classList.add("message");
   badgesSpan.classList.add("badges");
 
-  // Create a container element to hold the timestamp, badges, and username
-  const headerContainer = document.createElement("div");
-  headerContainer.style.display = "flex";
-  headerContainer.style.alignItems = "center";
-
-  // Add the timestamp span to the header container
-  headerContainer.appendChild(timestampSpan);
-
 // Check if the message contains an "@" symbol
 if (messageContent.includes("@")) {
   // Get the lowercase username of the channel owner
@@ -263,25 +255,14 @@ if (messageContent.includes("@")) {
       // Add the badgeImg to the badgeSpan
       badgesSpan.appendChild(badgeImg);
     }
-    headerContainer.appendChild(badgesSpan);
   }
 
-  headerContainer.appendChild(usernameSpan);
-
-  const messageContainer = document.createElement("div");
-
-  messageContainer.appendChild(headerContainer);
-  messageContainer.appendChild(messageSpan);
-
-  // append the span elements to the message element
+  // Append in render order: timestamp, badges, username, message.
+  // All children render inline-flow for the compact one-line layout.
   messageElement.appendChild(timestampSpan);
   messageElement.appendChild(badgesSpan);
   messageElement.appendChild(usernameSpan);
   messageElement.appendChild(messageSpan);
-
-  if (senderBadges.length > 0) {
-    messageElement.appendChild(headerContainer);
-  }
 
   return messageElement;
 }

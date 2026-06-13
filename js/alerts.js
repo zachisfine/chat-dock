@@ -6,22 +6,24 @@
 // ws.js will print anything we don't recognize, making it easy to spot
 // when an event has been renamed by the platform.
 
-const ALERT_DISPLAY_MS = 8000;   // Time alert is fully visible
-const ALERT_FADE_MS = 1000;      // Fade-out duration after display
+const ALERT_DISPLAY_MS = 12000;  // Time alert is fully visible (one marquee loop)
+const ALERT_FADE_MS = 600;       // Fade-out duration after display
 
 const alertContainer = document.getElementById("alert-container");
 
-function pushAlert(typeClass, innerHTML) {
+// Build a slim marquee-style alert. `body` is plain HTML (already
+// escaped at call site) — wrapped in .alert-content so the CSS keyframe
+// scrolls it right-to-left across the bar.
+function pushAlert(typeClass, body) {
   if (!alertContainer) return;
 
   const el = document.createElement("div");
   el.className = `alert ${typeClass}`;
-  el.innerHTML = innerHTML;
+  el.innerHTML = `<span class="alert-content">${body}</span>`;
 
   // Newest alerts on top — prepend, don't append
   alertContainer.prepend(el);
 
-  // Fade out, then remove
   setTimeout(() => {
     el.classList.add("alert-out");
     setTimeout(() => el.remove(), ALERT_FADE_MS);
@@ -38,20 +40,18 @@ function escapeHtml(text) {
     .replace(/'/g, "&#039;");
 }
 
+function line(icon, headline, sub) {
+  const subHtml = sub ? `<span class="alert-sub">${sub}</span>` : "";
+  return `<span class="alert-icon">${icon}</span>${headline}${subHtml}`;
+}
+
 export function alertSubscription({ username, months }) {
   const m = Number(months) || 1;
   const headline = m > 1
     ? `${escapeHtml(username)} resubscribed!`
     : `${escapeHtml(username)} subscribed!`;
   const sub = m > 1 ? `${m} months in a row` : "Welcome to the sub club";
-  pushAlert(
-    "alert-subscription",
-    `<div class="alert-icon">★</div>
-     <div class="alert-body">
-       <div class="alert-headline">${headline}</div>
-       <div class="alert-sub">${sub}</div>
-     </div>`
-  );
+  pushAlert("alert-subscription", line("★", headline, sub));
 }
 
 export function alertGiftedSubs({ gifter, count, recipients }) {
@@ -59,11 +59,7 @@ export function alertGiftedSubs({ gifter, count, recipients }) {
   const gifterName = gifter ? escapeHtml(gifter) : "Anonymous";
   pushAlert(
     "alert-gift",
-    `<div class="alert-icon">🎁</div>
-     <div class="alert-body">
-       <div class="alert-headline">${gifterName} gifted ${n} sub${n === 1 ? "" : "s"}!</div>
-       <div class="alert-sub">Thank you for the generosity</div>
-     </div>`
+    line("🎁", `${gifterName} gifted ${n} sub${n === 1 ? "" : "s"}!`, "Thank you for the generosity")
   );
 }
 
@@ -73,25 +69,16 @@ export function alertRaid({ raider, viewers }) {
   const tail = v > 0 ? ` with ${v} viewer${v === 1 ? "" : "s"}` : "";
   pushAlert(
     "alert-raid",
-    `<div class="alert-icon">⚔</div>
-     <div class="alert-body">
-       <div class="alert-headline">${raiderName} is raiding${tail}!</div>
-       <div class="alert-sub">Welcome the raid party</div>
-     </div>`
+    line("⚔", `${raiderName} is raiding${tail}!`, "Welcome the raid party")
   );
 }
 
 export function alertKicksGift({ sender, amount, message }) {
   const amt = Number(amount) || 0;
   const senderName = escapeHtml(sender || "Someone");
-  const note = message ? `<div class="alert-sub">${escapeHtml(message)}</div>` : "";
   pushAlert(
     "alert-kicks",
-    `<div class="alert-icon">⚡</div>
-     <div class="alert-body">
-       <div class="alert-headline">${senderName} sent ${amt} Kick${amt === 1 ? "" : "s"}!</div>
-       ${note}
-     </div>`
+    line("⚡", `${senderName} sent ${amt} Kick${amt === 1 ? "" : "s"}!`, message ? escapeHtml(message) : "")
   );
 }
 
@@ -100,11 +87,7 @@ export function alertFrontpage({ position } = {}) {
   const tail = Number.isFinite(pos) && pos > 0 ? ` at position #${pos}` : "";
   pushAlert(
     "alert-frontpage",
-    `<div class="alert-icon">★</div>
-     <div class="alert-body">
-       <div class="alert-headline">Featured on the front page${tail}!</div>
-       <div class="alert-sub">New viewers incoming</div>
-     </div>`
+    line("★", `Featured on the front page${tail}!`, "New viewers incoming")
   );
 }
 

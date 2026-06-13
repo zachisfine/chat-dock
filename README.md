@@ -1,8 +1,18 @@
 # chat-dock
 
-A live chat overlay for [Kick.com](https://kick.com) streamers. Browser-only — no backend, no install, no account. Load it as a browser source in your broadcasting software and you'll see chat, badges, pinned messages, 7TV emotes, and on-stream alerts for new subs, gifted subs, raids, and Kicks tips.
+A live chat overlay for [Kick.com](https://kick.com) streamers. Browser-only — no backend, no install, no account. Load it as a browser source in your broadcasting software and you'll see chat, badges, pinned messages, 7TV emotes, and on-stream alerts for new subs, gifted subs, raids, front-page features, and Kicks tips.
 
 Designed to be used by **any** Kick streamer — just point the overlay at your channel via a URL parameter.
+
+## Screenshots
+
+| Live chat — compact zebra rows, mod messages highlighted | Stacking marquee alerts above chat |
+|---|---|
+| ![Compact chat](assets/screenshots/overlay-compact.png) | ![Alerts](assets/screenshots/overlay-alerts.png) |
+
+The setup screen rendered when no `?kick=` channel is supplied:
+
+![Setup screen](assets/screenshots/setup-screen.png)
 
 ---
 
