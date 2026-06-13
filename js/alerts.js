@@ -95,6 +95,19 @@ export function alertKicksGift({ sender, amount, message }) {
   );
 }
 
+export function alertFrontpage({ position } = {}) {
+  const pos = Number(position);
+  const tail = Number.isFinite(pos) && pos > 0 ? ` at position #${pos}` : "";
+  pushAlert(
+    "alert-frontpage",
+    `<div class="alert-icon">★</div>
+     <div class="alert-body">
+       <div class="alert-headline">Featured on the front page${tail}!</div>
+       <div class="alert-sub">New viewers incoming</div>
+     </div>`
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Setup screen — rendered when no ?kick= channel parameter is supplied.
 // ---------------------------------------------------------------------------

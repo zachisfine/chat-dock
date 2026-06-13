@@ -299,6 +299,11 @@ body {
     opacity: 0.75;
 }
 
+.alert-frontpage {
+    background: linear-gradient(135deg, #1f6feb, #56c0ff);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
 /* ─── Setup screen (when ?kick= is missing) ─────────────────────────── */
 
 .setup-screen {

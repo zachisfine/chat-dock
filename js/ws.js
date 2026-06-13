@@ -9,6 +9,7 @@ import {
   alertGiftedSubs,
   alertRaid,
   alertKicksGift,
+  alertFrontpage,
   showSetupScreen
 } from "./alerts.js";
 
@@ -340,6 +341,24 @@ function handleWebSocketMessage(event) {
         message: d?.message || d?.gift?.message
       });
     }
+    return;
+  }
+
+  // Front-page feature event. Kick has a rotating front-page carousel; when
+  // the channel gets featured (or moves up in the carousel), the platform
+  // typically broadcasts an event here. The exact name isn't documented,
+  // so we cover the most plausible variants and let the unknown-event
+  // logger below catch any rename.
+  if (
+    messageData.event === "App\\Events\\StreamerIsLive" ||
+    messageData.event === "App\\Events\\FrontpageEvent" ||
+    messageData.event === "App\\Events\\FeaturedChannelEvent" ||
+    messageData.event === "App\\Events\\ChannelFeaturedEvent"
+  ) {
+    const d = safeParse(messageData.data);
+    alertFrontpage({
+      position: d?.position ?? d?.slot ?? d?.rank
+    });
     return;
   }
 
