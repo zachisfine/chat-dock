@@ -31,6 +31,49 @@ const excludedKickBots = [
 const emoteRegex = /\[(emote|emoji):(\w+):?[^\]]*\]/g;
 const htmlRegex = /(?<!src=")https?:\/\/[^\s]+(?![^<]*<\/img>)/g;
 
+// Tracks badge types we've already logged as unknown — keeps the console
+// noise to one line per type per session.
+const loggedUnknownBadges = new Set();
+
+// Resolve a badge image src with a graceful fallback chain. Handles the
+// `type:count` strings produced by ws.js (e.g. "level:10") by trying the
+// tiered file first (level_10.svg), then the bare type (level.svg), then
+// a generic badge that always exists. Unknown types get logged once.
+function badgeImageFor(badgeType) {
+  if (badgeType.includes(":")) {
+    const [type, count] = badgeType.split(":");
+    return {
+      primary: `assets/${type}_${count}.svg`,
+      fallback: `assets/${type}.svg`,
+      title: `${type} (${count})`
+    };
+  }
+  return {
+    primary: `assets/${badgeType}.svg`,
+    fallback: null,
+    title: badgeType
+  };
+}
+
+// Wire an <img> with progressive fallbacks: primary → fallback → generic.
+function applyBadgeFallback(img, badgeType, fallbackSrc) {
+  img.onerror = () => {
+    if (fallbackSrc && img.src.indexOf(fallbackSrc) === -1) {
+      img.src = fallbackSrc;
+      return;
+    }
+    img.onerror = () => {
+      img.onerror = null;
+      img.src = "assets/badge_generic.svg";
+    };
+    img.src = "assets/badge_generic.svg";
+    if (!loggedUnknownBadges.has(badgeType)) {
+      loggedUnknownBadges.add(badgeType);
+      console.log("Unknown badge type — using generic fallback:", badgeType);
+    }
+  };
+}
+
 // set DOM elements
 const chatEL = document.getElementById("chat-container");
 // const timeStampCheck = document.getElementById("timeStampCheck");
@@ -209,9 +252,11 @@ if (messageContent.includes("@")) {
         badgeImg.classList.add("user-badges");
         badgeImg.setAttribute("title", `sub_gifter (${subGifterCount})`);
       } else {
-        badgeImg.src = `assets/${badgeType}.svg`;
+        const { primary, fallback, title } = badgeImageFor(badgeType);
+        applyBadgeFallback(badgeImg, badgeType, fallback);
+        badgeImg.src = primary;
         badgeImg.classList.add("user-badges");
-        badgeImg.setAttribute("title", badgeType);
+        badgeImg.setAttribute("title", title);
       }
       badgeImg.alt = badgeType;
 
@@ -280,9 +325,11 @@ export function createPinnedMessage(
         badgeImg.classList.add("user-badges");
         badgeImg.setAttribute("title", `sub_gifter (${subGifterCount})`);
       } else {
-        badgeImg.src = `assets/${badgeType}.svg`;
+        const { primary, fallback, title } = badgeImageFor(badgeType);
+        applyBadgeFallback(badgeImg, badgeType, fallback);
+        badgeImg.src = primary;
         badgeImg.classList.add("user-badges");
-        badgeImg.setAttribute("title", badgeType);
+        badgeImg.setAttribute("title", title);
       }
       badgeImg.alt = badgeType;
 
