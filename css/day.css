@@ -1,0 +1,42 @@
+/* Day theme — counterpart to night.css. Loaded by the !daymode chat
+ * command (moderator / broadcaster only). Pairs light backgrounds with
+ * inverted text color so the overlay stays legible on light scenes. */
+
+body {
+    background: #f5f5f5;
+}
+
+#container {
+    background: rgba(255, 255, 255, 0);
+    border-radius: .5em;
+}
+
+#chat-container {
+    color: #1a1a1a;
+}
+
+.pinned-message {
+    background: #e8f5e8;
+    color: #1a1a1a;
+    border-radius: .5em;
+}
+
+.pinIcon {
+    filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.4));
+}
+
+.atStreamer {
+    background-color: rgba(169, 71, 211, 0.25);
+    color: #1a1a1a;
+    border-radius: .5em;
+}
+
+.moderator {
+    background-color: rgba(5, 152, 200, 0.25);
+    color: #1a1a1a;
+    border-radius: .5em;
+}
+
+.message-item .timestamp {
+    color: #4a4a4a;
+}
