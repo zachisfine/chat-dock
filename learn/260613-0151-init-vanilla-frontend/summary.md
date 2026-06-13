@@ -1,5 +1,8 @@
 # Learn run summary — 2026-06-13 01:51 EDT
 
+> **Update 2026-06-13 02:08 EDT:** all known issues flagged in this run
+> have been resolved. See `learn/260613-0208-fix-known-issues/summary.md`.
+
 **Project:** chat-dock — Kick.com chat overlay (vanilla HTML/CSS/JS, no build).
 
 ## Configuration

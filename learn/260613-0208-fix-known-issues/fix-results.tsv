@@ -1,0 +1,7 @@
+iter	severity	category	target	commit	resolution
+1	HIGH	bug	js/chat.js fadeURL/fadeTimeURL undeclared	914285d	declared URL-param-driven config at top of file
+2	MED	missing-asset	css/day.css	566b12d	created light theme counterpart to night.css
+3	MED	missing-asset	assets/subscriber.svg	d18c4cf	created purple-star fallback for channels with no sub badges
+4	LOW	dead-code	js/ws.js userId export	312f103	removed dead export and matching unused import in js/7tv.js
+5	MED	resilience	chat.js badge rendering	a4345b6	progressive fallback chain (type_count → type → generic) + once-per-type unknown logging
+6	FEATURE	alert-coverage	front-page detection	1a0c4a7	added alertFrontpage + .alert-frontpage style + 4 candidate event names

@@ -180,9 +180,7 @@ chat-dock/
 
 ## Known issues
 
-- `!daymode` references `css/day.css`, which is **not** included in the repo — the command will currently 404.
-- `fadeRemoveMessage` in `js/chat.js` references undeclared `fadeURL` / `fadeTimeURL`; calling it throws.
-- The `userId` named export in `js/ws.js` is never assigned (the real id is passed as a function argument inside `getChannelInfo`). The 7TV fetcher receives it correctly through that argument path, so this is a dead export, not a runtime bug.
+- Kick's WebSocket event names for subscriptions, gifts, raids, Kicks tips, and front-page features are **not officially documented**. The handlers in `js/ws.js` use best-guess names; if an alert never fires, check the browser console for `Unknown event:` lines and copy that event name into the matching handler.
 
 ## License
 
