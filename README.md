@@ -24,6 +24,7 @@ Drop a URL into your broadcasting software's browser source — get live chat, b
 - [Highlights](#highlights)
 - [Screenshots](#screenshots)
 - [Quick start](#quick-start)
+  - [Host it for free on GitHub Pages](#host-it-for-free-on-github-pages)
   - [Optional URL parameters](#optional-url-parameters)
 - [Features](#features)
 - [Why chat-dock?](#why-chat-dock)
@@ -71,15 +72,41 @@ The setup screen rendered when no `?kick=` channel is supplied:
 
 ## Quick start
 
-1. Clone or download this repository.
-2. Serve it from a static host **or** open `index.html` directly from disk.
-3. Append `?kick=<your-channel-name>` to the URL.
+The fastest path is **GitHub Pages** (instructions below) — you get a public HTTPS URL for free in about two minutes. If you'd rather not host it at all, you can also open `index.html` straight from disk:
 
 ```
 file:///path/to/chat-dock/index.html?kick=yourchannelname
 ```
 
 If you open the page without `?kick=`, you'll get a setup screen telling you what's missing.
+
+### Host it for free on GitHub Pages
+
+GitHub will host this overlay on a free `*.github.io` subdomain at no cost — perfect for OBS / Meld / vMix browser sources because you get a stable HTTPS URL with no install or backend.
+
+1. **Fork this repo** on GitHub (top-right **Fork** button). You'll end up with `https://github.com/<your-username>/chat-dock`.
+2. In your fork, go to **Settings → Pages** (left sidebar).
+3. Under **Build and deployment → Source**, pick **Deploy from a branch**.
+4. Under **Branch**, pick `main` and folder `/ (root)`, then click **Save**.
+5. Wait ~1–2 minutes. Refresh the Pages settings page — you'll see a green banner with your live URL:
+
+   ```
+   https://<your-username>.github.io/chat-dock/
+   ```
+
+6. Append `?kick=<your-channel-name>` and you're done:
+
+   ```
+   https://<your-username>.github.io/chat-dock/?kick=yourchannelname
+   ```
+
+7. Paste that URL into OBS / Meld / Streamlabs as a Browser Source (see the [FAQ](#faq--integrating-with-your-streaming-software)).
+
+> 💡 **Updating the overlay:** every time you push (or sync your fork from upstream), GitHub Pages auto-rebuilds within a minute. No deploy step.
+
+> 💡 **Custom domain:** if you own a domain, you can point it at your GitHub Pages site via **Settings → Pages → Custom domain**. Same overlay, your own URL.
+
+> ⚠️ **Repo must be public** for GitHub Pages on a free GitHub account. If you want the source private, you'll need GitHub Pro or a different static host (Netlify, Cloudflare Pages, Vercel — all free tiers also work, same drag-and-drop flow).
 
 ### Optional URL parameters
 
@@ -146,6 +173,7 @@ Alerts marquee right-to-left like Kick's native ticker, stack when multiple even
 |---|---|---|---|
 | Works with Kick.com | ✅ | ❌ (Twitch/YouTube focus) | Whatever you build |
 | Zero install / zero account | ✅ | ❌ requires login + widget setup | ❌ |
+| Free public HTTPS hosting | ✅ via GitHub Pages | ✅ but locked to their domain | DIY |
 | 7TV emotes out of the box | ✅ | ❌ | DIY |
 | Stackable alerts for subs/gifts/raids/Kicks tips | ✅ | Partial | DIY |
 | Moderation visibility (AI mod / ban / timeout tags) | ✅ | ❌ | DIY |
@@ -164,7 +192,7 @@ If you stream on Kick and want a polished overlay without spinning up infrastruc
 2. Name it "Chat Dock" and click OK.
 3. In the source properties:
    - **URL:** point at where you're hosting `index.html`, with `?kick=yourchannelname` (and `&minKicks=…` if you want).
-     - Hosted: e.g. `https://your-host.example/chat-dock/index.html?kick=you`
+     - Hosted: e.g. `https://yourname.github.io/chat-dock/?kick=you` (see [Host it for free on GitHub Pages](#host-it-for-free-on-github-pages))
      - Local file: drop the full `file:///` path, or use OBS's "Local File" checkbox and browse to `index.html`, then put `?kick=you` in the **URL bar** that appears.
    - **Width / Height:** match the region of the screen you want chat to occupy (e.g. `400 × 800` for a vertical sidebar).
    - **Custom CSS:** leave blank — `style.css` already handles everything. If you want to override, see [`docs/design-guidelines.md`](docs/design-guidelines.md).
