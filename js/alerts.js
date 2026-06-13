@@ -82,6 +82,28 @@ export function alertKicksGift({ sender, amount, message }) {
   );
 }
 
+// Stacking alert for bans and timeouts so the streamer notices the
+// moderation action even if the offending messages are off-screen.
+// Timeouts show seconds remaining when available; bans don't.
+export function alertModeration({ username, action, moderator, duration, expiresAt }) {
+  const who = escapeHtml(username || "A user");
+  const by = moderator ? ` by ${escapeHtml(moderator)}` : "";
+  let secs = 0;
+  if (Number(duration) > 0) {
+    secs = Number(duration);
+  } else if (expiresAt) {
+    const t = new Date(expiresAt).getTime();
+    if (Number.isFinite(t)) secs = Math.max(0, Math.round((t - Date.now()) / 1000));
+  }
+  const isTimeout = action === "timeout";
+  const icon = isTimeout ? "⏱" : "⛔";
+  const tail = isTimeout && secs > 0 ? ` for ${secs}s` : "";
+  const headline = isTimeout
+    ? `${who} was timed out${tail}${by}`
+    : `${who} was banned${by}`;
+  pushAlert("alert-moderation", line(icon, headline, "Chat moderated"));
+}
+
 export function alertFrontpage({ position } = {}) {
   const pos = Number(position);
   const tail = Number.isFinite(pos) && pos > 0 ? ` at position #${pos}` : "";

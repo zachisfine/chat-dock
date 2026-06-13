@@ -11,6 +11,7 @@ import {
   alertRaid,
   alertKicksGift,
   alertFrontpage,
+  alertModeration,
   showSetupScreen
 } from "./alerts.js";
 
@@ -222,34 +223,52 @@ function handleWebSocketMessage(event) {
     return;
   }
 
-  // Check if Message Deleted Event
+  // Check if Message Deleted Event. Kick fires this for both manual
+  // mod deletes and AI-mod ("AutoMod") actions. The payload sometimes
+  // includes a `deleted_by` block; AI mod typically appears with no
+  // human moderator or a system identifier. We use that signal to
+  // distinguish the label shown on the lingering message.
   if (messageData.event === "App\\Events\\MessageDeletedEvent") {
-    let DeleteMessageData = JSON.parse(messageData.data);
-    let messageID = DeleteMessageData.message.id;
-
-    console.log(messageID);
-    // Call the function to remove the message
-    removeChatMessage(messageID);
+    const DeleteMessageData = JSON.parse(messageData.data);
+    const messageID = DeleteMessageData.message.id;
+    const deletedBy = DeleteMessageData.deleted_by || DeleteMessageData.message.deleted_by;
+    const isAiMod =
+      !deletedBy ||
+      deletedBy.is_automod === true ||
+      (typeof deletedBy.username === "string" &&
+        /automod|kickbot|ai[\s_-]?mod/i.test(deletedBy.username));
+    const reason = isAiMod ? "AI MOD" : "DELETED";
+    removeChatMessage(messageID, reason);
     return;
   }
 
-  // Check if User Ban Event
+  // Check if User Ban Event. Kick uses the same event for permanent
+  // bans and timeouts — timeouts include an `expires_at` (and/or a
+  // duration) while permanent bans do not. Pick the label and alert
+  // type from whichever shape arrives.
   if (messageData.event === "App\\Events\\UserBannedEvent") {
-    let banData = JSON.parse(messageData.data);
-    let banUserData = banData.user;
-    let banUserID = banUserData.id;
+    const banData = JSON.parse(messageData.data);
+    const banUserData = banData.user || {};
+    const banUserID = banUserData.id;
+    const bannedBy = banData.banned_by || {};
+    const expiresAt = banData.expires_at || banData.expiresAt || null;
+    const duration = Number(banData.duration) || 0;
+    const isTimeout = Boolean(expiresAt) || duration > 0;
+    const reason = isTimeout ? "TIMED OUT" : "BANNED";
 
-    console.log("Banned UserID", banUserID);
-
-    // Find all messages from banned UserID and delete
     const bannedUserMessages = document.querySelectorAll(
       `.message-item[user-id="${banUserID}"]`
     );
-
-    // Mark each visible message struck-through so the streamer sees the
-    // moderation action rather than messages silently vanishing.
     bannedUserMessages.forEach((messageElement) => {
-      markDeleted(messageElement);
+      markDeleted(messageElement, reason);
+    });
+
+    alertModeration({
+      username: banUserData.username,
+      action: isTimeout ? "timeout" : "ban",
+      moderator: bannedBy.username,
+      duration,
+      expiresAt
     });
     return;
   }

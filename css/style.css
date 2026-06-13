@@ -214,7 +214,7 @@ body {
 }
 
 #chat-container .message-item.deleted::after {
-    content: "DELETED";
+    content: attr(data-deleted-reason);
     display: inline-block;
     margin-left: 6px;
     padding: 0 5px;
@@ -226,6 +226,28 @@ body {
     border-radius: 3px;
     vertical-align: middle;
     text-decoration: none;
+}
+
+/* AI mod gets its own tag color so the streamer can spot AutoMod
+ * actions at a glance vs. a human mod manually deleting. */
+#chat-container .message-item.deleted[data-deleted-reason="AI MOD"]::after {
+    background: #6b3fd6;
+}
+
+#chat-container .message-item.deleted[data-deleted-reason="TIMED OUT"]::after {
+    background: #d68b1f;
+}
+
+#chat-container .message-item.deleted[data-deleted-reason="BANNED"]::after {
+    background: #8a1313;
+}
+
+/* Kick staff get a distinctive magenta username so they stand out
+ * from regular chatters, mods, and broadcaster. `!important` is
+ * required because chat.js sets username color via inline style
+ * from the user's Kick identity color. */
+#chat-container .message-item.staff .username {
+    color: #ff5cc7 !important;
 }
 
 .bot {
@@ -385,6 +407,11 @@ body {
 .alert-frontpage {
     background: linear-gradient(135deg, #1f6feb, #56c0ff);
     border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.alert-moderation {
+    background: linear-gradient(135deg, #6e1818, #d63a3a);
+    border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 /* ─── Setup screen (when ?kick= is missing) ─────────────────────────── */

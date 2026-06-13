@@ -159,6 +159,11 @@ export function createMessage(
     messageElement.classList.add("moderator");
   }
 
+  // Tag Kick staff so the CSS can give them a distinct username color.
+  if (senderBadges.includes("staff")) {
+    messageElement.classList.add("staff");
+  }
+
   // Check if the user is a subscriber, VIP, or gifter
   const isSubscriber = senderBadges.includes("subscriber");
   const isVIP = senderBadges.includes("vip");
@@ -449,19 +454,22 @@ export function fadeRemoveMessage(messageID) {
 // short enough that mass-deletes don't pile up.
 const DELETED_LINGER_MS = 10000;
 
-export function removeChatMessage(id) {
+export function removeChatMessage(id, reason) {
   const messageEL = document.getElementById(id);
   if (!chatEL || !messageEL) {
     console.log(`Message with ID ${id} not found.`);
     return;
   }
-  markDeleted(messageEL);
+  markDeleted(messageEL, reason);
 }
 
-// Strikethrough + red tint + "DELETED" tag so the streamer sees which
-// message got moderated. Auto-cleans after DELETED_LINGER_MS.
-export function markDeleted(messageEL) {
+// Strikethrough + red tint + reason tag so the streamer sees which
+// message got moderated AND why (manual delete, AI mod, ban, timeout).
+// Reason flows into a data attribute that the CSS ::after pulls into
+// the inline label. Auto-cleans after DELETED_LINGER_MS.
+export function markDeleted(messageEL, reason = "deleted") {
   if (!messageEL || messageEL.classList.contains("deleted")) return;
   messageEL.classList.add("deleted");
+  messageEL.dataset.deletedReason = String(reason).toUpperCase();
   setTimeout(() => messageEL.remove(), DELETED_LINGER_MS);
 }
