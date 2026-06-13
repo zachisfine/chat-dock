@@ -23,7 +23,6 @@ export const minKicksAlert = Number.isFinite(parsedMinKicks) && parsedMinKicks >
   : 0;
 
 export let subBadges;
-export let userId;
 
 let kickWS = null;
 const kickWSUri =

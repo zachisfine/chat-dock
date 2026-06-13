@@ -1,4 +1,3 @@
-import { userId } from './ws.js';
 export let sevenTVEmotes = [];
 export let tSevenTVEmotes = [];
 
