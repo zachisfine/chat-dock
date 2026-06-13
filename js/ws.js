@@ -4,9 +4,24 @@ import {
   removeChatMessage,
   createPinnedMessage
 } from "./chat.js";
+import {
+  alertSubscription,
+  alertGiftedSubs,
+  alertRaid,
+  alertKicksGift,
+  showSetupScreen
+} from "./alerts.js";
 
 const urlParams = new URLSearchParams(window.location.search);
-export const kickChannel = urlParams.get("kick") || "queengloria";
+export const kickChannel = urlParams.get("kick");
+
+// Minimum Kicks gift amount that fires an alert. 0 means show every gift.
+// Override via ?minKicks=N — non-numeric values fall back to 0.
+const parsedMinKicks = parseInt(urlParams.get("minKicks"), 10);
+export const minKicksAlert = Number.isFinite(parsedMinKicks) && parsedMinKicks >= 0
+  ? parsedMinKicks
+  : 0;
+
 export let subBadges;
 export let userId;
 
@@ -39,6 +54,14 @@ async function handleWebSocketOpen() {
       data: { auth: "", channel: `chatrooms.${chatroomId}.v2` }
     })
   );
+  // Also subscribe to the channel-wide topic — this is where raid/host and
+  // some subscription events get published on Kick.
+  kickWS.send(
+    JSON.stringify({
+      event: "pusher:subscribe",
+      data: { auth: "", channel: `channel.${channelInfo.channelId}` }
+    })
+  );
   console.log(
     "Connected to Kick.com Streamer Chat: " +
       kickChannel +
@@ -54,6 +77,7 @@ async function getChannelInfo() {
   );
   const data = await response.json();
   const chatroomId = data.chatroom.id;
+  const channelId = data.id;
   const userId = data.user_id;
   subBadges = data.subscriber_badges || [];
   subBadges.sort((a, b) => (a.months > b.months ? 1 : -1));
@@ -61,7 +85,7 @@ async function getChannelInfo() {
   fetch7TVEmotes(userId);
   console.log("Kick Subscriber Badges:", subBadges); // Log the sub badges
 
-  return { chatroomId, subBadges };
+  return { chatroomId, channelId, subBadges };
 }
 
 // Existing function to handle fetching data
@@ -98,8 +122,11 @@ function handleWebSocketClose() {
   }, 1000);
 }
 
-// Call connectWebSocket to establish the initial connection
-if (kickWS === null) {
+// Bootstrap: require a channel parameter. If missing, render setup help and
+// don't try to connect — otherwise we'd spam the console with 404s.
+if (!kickChannel) {
+  showSetupScreen();
+} else if (kickWS === null) {
   connectWebSocket();
 }
 
@@ -191,6 +218,7 @@ function handleWebSocketMessage(event) {
       senderBadges,
       subscriberAge
     );
+    return;
   }
 
   // Check if Message Deleted Event
@@ -201,6 +229,7 @@ function handleWebSocketMessage(event) {
     console.log(messageID);
     // Call the function to remove the message
     removeChatMessage(messageID);
+    return;
   }
 
   // Check if User Ban Event
@@ -220,6 +249,7 @@ function handleWebSocketMessage(event) {
     bannedUserMessages.forEach((messageElement) => {
       messageElement.remove();
     });
+    return;
   }
 
   // Check if Pinned Message Created Event
@@ -243,6 +273,7 @@ function handleWebSocketMessage(event) {
 
     // Call the function to create and display the pinned message
     createPinnedMessage(pinMessage, pinSender, pinIdentity, senderBadges);
+    return;
   }
 
   // Check if Pinned Message Deleted Event
@@ -255,8 +286,79 @@ function handleWebSocketMessage(event) {
       // Remove the last added pinned message (assuming it's the latest one)
       pinnedMessages[pinnedMessages.length - 1].remove();
     }
+    return;
+  }
+
+  // ─── Sub / gift / raid / Kicks alerts ────────────────────────────────────
+  // Kick's WebSocket isn't formally documented and event names can shift.
+  // If you see "Unknown event" entries below, copy the event name and add it
+  // to one of these handlers.
+
+  if (messageData.event === "App\\Events\\SubscriptionEvent") {
+    const d = safeParse(messageData.data);
+    alertSubscription({
+      username: d?.username || d?.user?.username,
+      months: d?.months ?? 1
+    });
+    return;
+  }
+
+  if (messageData.event === "App\\Events\\GiftedSubscriptionsEvent") {
+    const d = safeParse(messageData.data);
+    alertGiftedSubs({
+      gifter: d?.gifter_username || d?.gifter?.username,
+      count: Array.isArray(d?.gifted_usernames) ? d.gifted_usernames.length : d?.count,
+      recipients: d?.gifted_usernames
+    });
+    return;
+  }
+
+  if (
+    messageData.event === "App\\Events\\StreamHostEvent" ||
+    messageData.event === "App\\Events\\ChatroomHostEvent"
+  ) {
+    const d = safeParse(messageData.data);
+    alertRaid({
+      raider: d?.host_username || d?.username,
+      viewers: d?.number_viewers ?? d?.viewers
+    });
+    return;
+  }
+
+  // Kicks gifting — currency-style tipping on Kick.com.
+  // Best-guess event names; logger below catches any rename.
+  if (
+    messageData.event === "App\\Events\\KicksGifted" ||
+    messageData.event === "App\\Events\\KicksGiftedEvent" ||
+    messageData.event === "App\\Events\\GiftsLeaderboardUpdated"
+  ) {
+    const d = safeParse(messageData.data);
+    const amount = Number(d?.gift?.amount ?? d?.amount ?? d?.kicks ?? 0);
+    if (amount >= minKicksAlert) {
+      alertKicksGift({
+        sender: d?.sender?.username || d?.username || d?.gifter_username,
+        amount,
+        message: d?.message || d?.gift?.message
+      });
+    }
+    return;
+  }
+
+  // Ignore pusher housekeeping noise, but log anything else for debugging.
+  if (
+    messageData.event &&
+    !messageData.event.startsWith("pusher:") &&
+    !messageData.event.startsWith("pusher_internal:")
+  ) {
+    console.log("Unknown event:", messageData.event, messageData.data);
   }
 }
 
-// Listen for message events
-kickWS.addEventListener("message", handleWebSocketMessage);
+function safeParse(data) {
+  if (typeof data !== "string") return data || {};
+  try {
+    return JSON.parse(data);
+  } catch {
+    return {};
+  }
+}
