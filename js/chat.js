@@ -1,6 +1,16 @@
 import { kickChannel, subBadges } from "./ws.js";
 import { sevenTVEmotes } from "./7tv.js";
 
+// Fade-out config for message removal — driven by URL params with safe
+// defaults. `fade=on|off` toggles the fade animation; `fadeTime` is the
+// fade duration in milliseconds before the element is actually removed.
+const chatUrlParams = new URLSearchParams(window.location.search);
+const fadeURL = chatUrlParams.get("fade") === "on" ? "on" : "off";
+const parsedFadeTime = parseInt(chatUrlParams.get("fadeTime"), 10);
+const fadeTimeURL = Number.isFinite(parsedFadeTime) && parsedFadeTime > 0
+  ? parsedFadeTime
+  : 1000;
+
 let finalMessage;
 let messageCount;
 
