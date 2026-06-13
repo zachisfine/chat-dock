@@ -1,0 +1,9 @@
+# Local tooling artifacts
+.claude/
+.playwright-mcp/
+.remember/
+
+# OS/editor cruft
+.DS_Store
+Thumbs.db
+*.swp
