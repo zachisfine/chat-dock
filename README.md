@@ -1,15 +1,32 @@
+<div align="center">
+
 # chat-dock
 
-A live chat overlay for [Kick.com](https://kick.com) streamers. Browser-only — no backend, no install, no account. Load it as a browser source in your broadcasting software and you'll see chat, badges, pinned messages, 7TV emotes, and on-stream alerts for new subs, gifted subs, raids, front-page features, and Kicks tips.
+### A zero-install, browser-only chat overlay for [Kick.com](https://kick.com) streamers
 
-Designed to be used by **any** Kick streamer — just point the overlay at your channel via a URL parameter.
+Drop a URL into your broadcasting software's browser source — get live chat, badges, 7TV emotes, pinned messages, stacking alerts, and moderation visibility on stream. No backend. No accounts. No build step.
+
+<p>
+  <img alt="Vanilla JS" src="https://img.shields.io/badge/stack-vanilla%20JS-f7df1e?logo=javascript&logoColor=black" />
+  <img alt="No build step" src="https://img.shields.io/badge/build-none%20required-22c55e" />
+  <img alt="Browser source" src="https://img.shields.io/badge/runs%20in-OBS%20%E2%80%A2%20Meld%20%E2%80%A2%20Streamlabs%20%E2%80%A2%20vMix-blue" />
+  <img alt="Kick only" src="https://img.shields.io/badge/platform-Kick.com-53fc18?logo=kickstarter&logoColor=black" />
+  <a href="https://github.com/zachisfine/chat-dock/stargazers"><img alt="GitHub stars" src="https://img.shields.io/github/stars/zachisfine/chat-dock?style=flat&color=ffaa00" /></a>
+  <a href="https://github.com/zachisfine/chat-dock/issues"><img alt="Open issues" src="https://img.shields.io/github/issues/zachisfine/chat-dock?color=red" /></a>
+</p>
+
+</div>
+
+---
 
 ## Table of contents
 
+- [Highlights](#highlights)
 - [Screenshots](#screenshots)
 - [Quick start](#quick-start)
   - [Optional URL parameters](#optional-url-parameters)
 - [Features](#features)
+- [Why chat-dock?](#why-chat-dock)
 - [FAQ — Integrating with your streaming software](#faq--integrating-with-your-streaming-software)
   - [How do I add it to OBS Studio?](#how-do-i-add-it-to-obs-studio)
   - [How do I add it to Meld Studio?](#how-do-i-add-it-to-meld-studio)
@@ -21,14 +38,30 @@ Designed to be used by **any** Kick streamer — just point the overlay at your 
   - [Does it support Twitch?](#does-it-support-twitch)
 - [Project layout](#project-layout)
 - [Documentation](#documentation)
+- [Roadmap](#roadmap)
 - [Known issues](#known-issues)
+- [Contributing](#contributing)
 - [License](#license)
+
+---
+
+## Highlights
+
+> 🚀 **Drop-in URL** — point `?kick=<channel>` at any Kick streamer; no per-user config.
+>
+> 🛡️ **Moderation visibility** — AI-mod, manual delete, timeouts, and bans get distinct color-coded tags so you *see* what got nuked instead of messages silently vanishing.
+>
+> 🎨 **Compact zebra chat + marquee alerts** styled to feel native to Kick, not bolted on.
 
 ## Screenshots
 
 | Live chat — compact zebra rows, mod messages highlighted | Stacking marquee alerts above chat |
 |---|---|
 | ![Compact chat](assets/screenshots/overlay-compact.png) | ![Alerts](assets/screenshots/overlay-alerts.png) |
+
+**Moderation visibility** — every action gets its own tag (`AI MOD`, `TIMED OUT`, `BANNED`, `DELETED`) plus a stacking alert at the top:
+
+![Moderation states](assets/screenshots/overlay-moderation.png)
 
 The setup screen rendered when no `?kick=` channel is supplied:
 
@@ -54,32 +87,72 @@ If you open the page without `?kick=`, you'll get a setup screen telling you wha
 |-------|---------|--------------|
 | `kick` | *(required)* | Your Kick.com channel name, lowercase, no `@`. |
 | `minKicks` | `0` | Minimum Kicks-tip amount that fires an on-screen alert. Set higher to suppress small tips. Example: `&minKicks=100`. |
+| `fade` | `off` | Set to `on` to fade old messages out as they're trimmed. |
+| `fadeTime` | `1000` | Fade duration in ms (used when `fade=on`). |
 
 Full URL example:
 
 ```
-https://your-host.example/chat-dock/index.html?kick=yourchannelname&minKicks=50
+https://your-host.example/chat-dock/index.html?kick=yourchannelname&minKicks=50&fade=on
 ```
 
 ---
 
 ## Features
 
-- **Live chat** via Kick's public WebSocket (Pusher).
-- **Badges** — subscriber tiers (uses your channel's actual sub-badge tiers), moderator, VIP, founder, verified, staff, OG, plus tiered sub-gifter icons (1-24, 25-49, 50-99, 100-199, 200+).
-- **7TV emotes** — both your channel set and the global set.
-- **Kick's native emotes & emojis**, plus auto-linkification of URLs.
-- **Pinned messages** — appear at the top with a thumbtack icon; auto-removed when the streamer un-pins.
-- **Banned users** — when a user is banned, every one of their visible messages is removed retroactively.
-- **`!nightmode` / `!daymode`** style toggle (moderator or broadcaster only).
-- **Auto-reconnect** — dropped WebSocket triggers a 1-second retry loop; you never need to refresh the browser source.
-- **Stacking alerts** at the top of the overlay for:
-  - 🟣 **New subscriptions** (and resubs with month count)
-  - 🌸 **Gifted subs** (single or bulk)
-  - 🟢 **Raids / hosts** (with incoming viewer count)
-  - 🟡 **Kicks tips** (with configurable minimum threshold)
+**Chat rendering**
+- Live chat via Kick's public Pusher WebSocket — no auth, no API key.
+- Compact single-line **zebra-striped** rows so dense chat stays readable.
+- **7TV emotes** — your channel set *and* the global set.
+- Kick's native emotes & emojis, plus auto-linkification of URLs.
+- **Pinned messages** with a thumbtack icon; auto-removed when the streamer un-pins.
 
-Alerts stack vertically when multiple events arrive close together, animate in from the top, and fade themselves out after ~8 seconds.
+**Badges & identity**
+- Subscriber tiers (uses your channel's *actual* sub-badge tiers from the Kick API).
+- Moderator, VIP, founder, verified, **staff**, OG.
+- Tiered sub-gifter icons (1-24, 25-49, 50-99, 100-199, 200+).
+- **Kick staff get a distinctive magenta username** so you notice when an official Kick employee is in chat.
+- **Mods** get a cyan-highlighted row + accent border so the streamer sees a real human mod typing.
+
+**Moderation visibility** *(new)*
+- 🔴 `DELETED` — manual mod or streamer delete
+- 🟣 `AI MOD` — Kick's AutoMod removed the message
+- 🟠 `TIMED OUT` — user was timed out; affected messages get tagged
+- 🟥 `BANNED` — user was permanently banned
+- Tagged messages linger for 10 seconds (strikethrough + red tint + reason tag) before they leave the DOM — no more "wait, what just disappeared?"
+- Stacking alert fires for every ban and timeout, showing the moderator's name and duration.
+
+**Stacking alerts** at the top of the overlay for:
+- 🟣 **New subscriptions** (and resubs with month count)
+- 🌸 **Gifted subs** (single or bulk)
+- 🟢 **Raids / hosts** (with incoming viewer count)
+- 🟡 **Kicks tips** (with configurable minimum threshold)
+- 🔵 **Front-page features** (when your channel gets featured)
+- 🔴 **Bans & timeouts** (with moderator name)
+
+Alerts marquee right-to-left like Kick's native ticker, stack when multiple events arrive close together, and fade after ~12 seconds.
+
+**Reliability & polish**
+- **Auto-reconnect** — dropped WebSocket triggers a 1-second retry loop; you never need to refresh the browser source.
+- **Hidden scrollbar** so the overlay stays clean even when chat is mid-flight.
+- **`!nightmode` / `!daymode`** chat command (moderator or broadcaster only).
+- Graceful **badge fallback chain** — unknown badge types fall back to a generic SVG instead of broken-image icons.
+
+---
+
+## Why chat-dock?
+
+| | chat-dock | StreamElements / Streamlabs widgets | A custom Node app |
+|---|---|---|---|
+| Works with Kick.com | ✅ | ❌ (Twitch/YouTube focus) | Whatever you build |
+| Zero install / zero account | ✅ | ❌ requires login + widget setup | ❌ |
+| 7TV emotes out of the box | ✅ | ❌ | DIY |
+| Stackable alerts for subs/gifts/raids/Kicks tips | ✅ | Partial | DIY |
+| Moderation visibility (AI mod / ban / timeout tags) | ✅ | ❌ | DIY |
+| Customise via CSS variables | ✅ | Limited | ✅ |
+| Total bytes shipped | ~30 KB | several MB | Whatever you ship |
+
+If you stream on Kick and want a polished overlay without spinning up infrastructure or signing up for yet another SaaS, chat-dock is the path of least resistance.
 
 ---
 
@@ -172,7 +245,7 @@ This is a known limitation of building on an unofficial WebSocket — flagged in
 
 ### Can I change the look of the alerts / chat?
 
-Yes. All styling lives in `css/style.css`. Look for the `--font-*`, `--chat-*`, and `--transparent-color` CSS variables near the top, plus the `.alert`, `.alert-subscription`, `.alert-gift`, `.alert-raid`, and `.alert-kicks` rules further down. See [`docs/design-guidelines.md`](docs/design-guidelines.md).
+Yes. All styling lives in `css/style.css`. Look for the `--font-*`, `--chat-*`, and `--transparent-color` CSS variables near the top, plus the `.alert`, `.alert-subscription`, `.alert-gift`, `.alert-raid`, `.alert-kicks`, and `.alert-moderation` rules further down. See [`docs/design-guidelines.md`](docs/design-guidelines.md).
 
 ### Does it support Twitch?
 
@@ -193,7 +266,7 @@ chat-dock/
 │   ├── ws.js         # Kick WebSocket + REST channel lookup + event router
 │   ├── chat.js       # DOM rendering for messages, badges, pins
 │   └── 7tv.js        # 7TV emote-set fetcher
-└── assets/           # Badge SVGs + pin icon
+└── assets/           # Badge SVGs + screenshots + pin icon
 ```
 
 ## Documentation
@@ -208,9 +281,26 @@ chat-dock/
 | [Configuration guide](docs/configuration-guide.md) | URL params, CSS variables, theme switching |
 | [Changelog](docs/changelog.md) | Notable commits |
 
+## Roadmap
+
+Open ideas — PRs welcome:
+
+- [ ] Make alert duration / marquee speed configurable via URL params
+- [ ] Optional polls / prediction overlays (Kick is rolling these out)
+- [ ] Channel-points / loyalty-reward redemption alerts
+- [ ] Theme presets you can pick via `?theme=`
+- [ ] First-class Twitch backend (separate file, same overlay layer)
+
 ## Known issues
 
 - Kick's WebSocket event names for subscriptions, gifts, raids, Kicks tips, and front-page features are **not officially documented**. The handlers in `js/ws.js` use best-guess names; if an alert never fires, check the browser console for `Unknown event:` lines and copy that event name into the matching handler.
+- AI-mod vs. manual-delete detection on `MessageDeletedEvent` is a heuristic (we read `deleted_by` when present and fall back to "AI MOD"). If you see the wrong tag in the wild, check the raw event in DevTools and tighten the check in `js/ws.js`.
+
+## Contributing
+
+Found a bug? Got a Kick event name we're missing? PRs and issues welcome. The codebase is intentionally small — four ES modules, no bundler, no framework — so it should be easy to drop in.
+
+If you're using chat-dock in production and like it, **a GitHub star** is the cheapest way to let me know. 🙂
 
 ## License
 
