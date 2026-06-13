@@ -2,7 +2,8 @@ import { fetch7TVEmotes } from "./7tv.js";
 import {
   prependMessage,
   removeChatMessage,
-  createPinnedMessage
+  createPinnedMessage,
+  markDeleted
 } from "./chat.js";
 import {
   alertSubscription,
@@ -245,9 +246,10 @@ function handleWebSocketMessage(event) {
       `.message-item[user-id="${banUserID}"]`
     );
 
-    // Remove each message
+    // Mark each visible message struck-through so the streamer sees the
+    // moderation action rather than messages silently vanishing.
     bannedUserMessages.forEach((messageElement) => {
-      messageElement.remove();
+      markDeleted(messageElement);
     });
     return;
   }

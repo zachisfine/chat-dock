@@ -199,6 +199,35 @@ body {
     font-weight: 600;
 }
 
+/* Moderated message — replaces silent removal with a visible struck-through
+ * red-tinted state so the streamer sees what got nuked. Higher specificity
+ * than the zebra and moderator rules so the deleted state always wins. */
+#chat-container .message-item.deleted {
+    background-color: rgba(255, 60, 60, 0.22);
+    border-left: 3px solid #ff5050;
+    padding-left: 9px;
+    opacity: 0.65;
+    text-decoration: line-through;
+    text-decoration-color: rgba(255, 80, 80, 0.85);
+    text-decoration-thickness: 2px;
+    position: relative;
+}
+
+#chat-container .message-item.deleted::after {
+    content: "DELETED";
+    display: inline-block;
+    margin-left: 6px;
+    padding: 0 5px;
+    font-size: 0.7em;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: #ffffff;
+    background: #c52828;
+    border-radius: 3px;
+    vertical-align: middle;
+    text-decoration: none;
+}
+
 .bot {
     display: none;
 }

@@ -444,13 +444,24 @@ export function fadeRemoveMessage(messageID) {
   }
 }
 
+// How long a moderated message stays visible (struck through) before
+// it actually leaves the DOM. Long enough for the streamer to notice,
+// short enough that mass-deletes don't pile up.
+const DELETED_LINGER_MS = 10000;
+
 export function removeChatMessage(id) {
   const messageEL = document.getElementById(id);
-
-  if (chatEL && messageEL) {
-    chatEL.removeChild(messageEL);
-    console.log(`Message with ID ${id} has been removed.`);
-  } else {
+  if (!chatEL || !messageEL) {
     console.log(`Message with ID ${id} not found.`);
+    return;
   }
+  markDeleted(messageEL);
+}
+
+// Strikethrough + red tint + "DELETED" tag so the streamer sees which
+// message got moderated. Auto-cleans after DELETED_LINGER_MS.
+export function markDeleted(messageEL) {
+  if (!messageEL || messageEL.classList.contains("deleted")) return;
+  messageEL.classList.add("deleted");
+  setTimeout(() => messageEL.remove(), DELETED_LINGER_MS);
 }
