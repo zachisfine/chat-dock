@@ -4,6 +4,26 @@ A live chat overlay for [Kick.com](https://kick.com) streamers. Browser-only —
 
 Designed to be used by **any** Kick streamer — just point the overlay at your channel via a URL parameter.
 
+## Table of contents
+
+- [Screenshots](#screenshots)
+- [Quick start](#quick-start)
+  - [Optional URL parameters](#optional-url-parameters)
+- [Features](#features)
+- [FAQ — Integrating with your streaming software](#faq--integrating-with-your-streaming-software)
+  - [How do I add it to OBS Studio?](#how-do-i-add-it-to-obs-studio)
+  - [How do I add it to Meld Studio?](#how-do-i-add-it-to-meld-studio)
+  - [Can I use it with Streamlabs Desktop / XSplit / vMix?](#can-i-use-it-with-streamlabs-desktop--xsplit--vmix)
+  - [How do I use it while streaming from my iPhone?](#how-do-i-use-it-while-streaming-from-my-iphone)
+  - [How do I use it while streaming from Android?](#how-do-i-use-it-while-streaming-from-android)
+  - [Why isn't an alert firing for sub/gift/raid events on my channel?](#why-isnt-an-alert-firing-for-subgiftraid-events-on-my-channel)
+  - [Can I change the look of the alerts / chat?](#can-i-change-the-look-of-the-alerts--chat)
+  - [Does it support Twitch?](#does-it-support-twitch)
+- [Project layout](#project-layout)
+- [Documentation](#documentation)
+- [Known issues](#known-issues)
+- [License](#license)
+
 ## Screenshots
 
 | Live chat — compact zebra rows, mod messages highlighted | Stacking marquee alerts above chat |
