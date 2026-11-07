@@ -6,6 +6,11 @@ Notable changes since the project's first commit. Generated from `git log`; newe
 
 Major refactor toward a universal, multi-streamer overlay.
 
+### Fixed
+- **Chat stopped updating (Nov 2026)** — Kick retired the static Pusher app key that `js/ws.js` hardcoded. The old key (`32cbd69e4b950bf97679`) is now rejected on every Pusher cluster with `4001 App key ... not in this cluster`, so the socket closed immediately and no `ChatMessageEvent` frames ever arrived. `ws.js` now asks Kick for the current app key/cluster at `POST https://web.kick.com/api/v1/realtime/connection` and falls back to a last-known-good key when that request is blocked by CORS (GitHub Pages, Netlify, `file://`).
+- **Reconnect storm** — `error` and `close` each started their own `connectWebSocket()`, doubling connection attempts and retrying a rejected key every second. There is now a single, identity-checked reconnect path with exponential backoff (1s → 15s).
+- **Credential-lookup race** — `connectWebSocket()` is now async (it awaits credentials), so a generation counter prevents two in-flight lookups from opening sockets concurrently.
+
 ### Added
 - **Universal channel support** — the `?kick=` URL parameter is now required and there is no longer a hardcoded default channel. The page title is now generic (`chat-dock`) instead of bound to a specific streamer.
 - **Setup screen** — opening the overlay without `?kick=` now renders a clear setup card with the example URL instead of silently falling back to a default.

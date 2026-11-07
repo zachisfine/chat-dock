@@ -160,7 +160,7 @@ https://your-host.example/chat-dock/index.html?kick=yourchannelname&minKicks=50&
 Alerts marquee right-to-left like Kick's native ticker, stack when multiple events arrive close together, and fade after ~12 seconds.
 
 **Reliability & polish**
-- **Auto-reconnect** — dropped WebSocket triggers a 1-second retry loop; you never need to refresh the browser source.
+- **Auto-reconnect** — a dropped WebSocket retries with exponential backoff (1s → 15s, reset once chat resubscribes); you never need to refresh the browser source.
 - **Hidden scrollbar** so the overlay stays clean even when chat is mid-flight.
 - **`!nightmode` / `!daymode`** chat command (moderator or broadcaster only).
 - Graceful **badge fallback chain** — unknown badge types fall back to a generic SVG instead of broken-image icons.

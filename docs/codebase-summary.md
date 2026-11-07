@@ -40,7 +40,8 @@ This project has **no `package.json`** — there are no installed dependencies. 
 | Service | URL | Purpose |
 |---------|-----|---------|
 | Kick channel API | `https://kick.com/api/v2/channels/{name}` | Channel info: chatroom ID, sub badges, user ID |
-| Kick Pusher | `wss://ws-us2.pusher.com/app/32cbd69e4b950bf97679?...` | Live chat events |
+| Kick realtime credentials | `https://web.kick.com/api/v1/realtime/connection` | Current Pusher app key + cluster (best-effort; CORS-blocked on static hosts, see fallback in `ws.js`) |
+| Kick Pusher | `wss://ws-{cluster}.pusher.com/app/{app_key}?...` | Live chat events |
 | Kick emote CDN | `https://files.kick.com/emotes/{id}/fullsize` | Kick emote images |
 | Kick emoji CDN | `https://dbxmjjzl5pc1g.cloudfront.net/.../emojis/{id}.png` | Kick emoji images |
 | 7TV channel emotes | `https://7tv.io/v3/users/kick/{userId}` | Channel-specific 7TV emote set |

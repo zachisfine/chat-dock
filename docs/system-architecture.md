@@ -19,11 +19,14 @@ flowchart LR
     F -- sevenTVEmotes --> E
 
     D -.HTTPS GET.-> G[Kick channel API<br>kick.com/api/v2/channels/X]
-    D -.WSS.-> H[Kick Pusher<br>ws-us2.pusher.com]
+    D -.HTTPS POST.-> L[Kick realtime credentials<br>web.kick.com/api/v1/realtime/connection]
+    D -.WSS.-> H[Kick Pusher<br>ws-{cluster}.pusher.com]
     E -.HTTPS GET.-> I[7TV API<br>7tv.io/v3/...]
     F -.IMG SRC.-> J[Kick emote/emoji CDNs]
     F -.IMG SRC.-> K[7TV emote CDN]
 ```
+
+The realtime-credentials call is best-effort: `web.kick.com` only sends CORS headers for its own origins, so static hosts (GitHub Pages, Netlify, `file://`) cannot read the response. In that case `ws.js` uses a baked-in last-known-good app key/cluster. The Pusher app key is not a secret — it only authorises subscribing to public channels — but it does rotate, which is why it is fetched first.
 
 Solid arrows are JS imports / function calls. Dashed arrows are network calls.
 
@@ -45,6 +48,12 @@ sequenceDiagram
         ws->>alerts: showSetupScreen()
         alerts->>Browser: render setup card
     else channel present
+        ws->>KickAPI: POST /api/v1/realtime/connection
+        alt CORS allows this origin
+            KickAPI-->>ws: app_key + cluster
+        else blocked / failed
+            ws->>ws: use baked-in fallback key
+        end
         ws->>KickWS: new WebSocket()
         KickWS-->>ws: open
         ws->>KickAPI: GET /channels/{name}
@@ -138,7 +147,7 @@ This is a deliberate tradeoff: prefer noisy debuggability over polished silence.
 |---------|--------------|----------|
 | Bad/missing `?kick=` param | `showSetupScreen()` renders setup card; no network calls happen. | Add the param. |
 | Kick channel API down or 404 | `fetchData` retries every 1s indefinitely. | Auto-recovers when API returns. |
-| WebSocket drops | `handleWebSocketClose` reconnects after 1s. | Auto-recovers. |
+| WebSocket drops | `handleWebSocketClose` reconnects with exponential backoff (1s → 15s), reset only once a subscription succeeds. | Auto-recovers. |
 | 7TV API down | `fetch7TVEmotes` swallows the error and proceeds with `sevenTVEmotes = []`. | Reload when 7TV is back. |
 | Unknown badge type | `chat.js` requests `assets/{type}.svg`. If that asset doesn't exist, the image is broken. | Add the SVG to `assets/`. |
 | Missing `assets/subscriber.svg` (referenced as fallback) | Broken image for sub badge when channel has no sub-badge tiers. | Add the asset. |

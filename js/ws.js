@@ -28,29 +28,121 @@ export const minKicksAlert = Number.isFinite(parsedMinKicks) && parsedMinKicks >
 export let subBadges;
 
 let kickWS = null;
-const kickWSUri =
-  "wss://ws-us2.pusher.com/app/32cbd69e4b950bf97679?protocol=7&client=js&version=7.6.0&flash=false";
+
+// Kick no longer ships a static Pusher app key. Each client asks Kick for one
+// via POST /api/v1/realtime/connection. That host sends no CORS headers for
+// third-party origins (GitHub Pages, Netlify, file://…), so browser fetches of
+// it are blocked. When that happens we fall back to the last known-good key.
+const realtimeConnectionUrl =
+  "https://web.kick.com/api/v1/realtime/connection";
+const fallbackPusherCredentials = {
+  appKey: "34bf7a0ff419a2a775b9",
+  cluster: "us2"
+};
+
+let reconnectTimer = null;
+let reconnectAttempts = 0;
+let socketGeneration = 0;
+
+function buildPusherUrl({ appKey, cluster }) {
+  return `wss://ws-${cluster}.pusher.com/app/${appKey}?protocol=7&client=js&version=7.6.0&flash=false`;
+}
+
+function randomClientId() {
+  if (crypto.randomUUID) return crypto.randomUUID();
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
+  });
+}
+
+// Ask Kick for the current Pusher app key/cluster. Falls back to the baked-in
+// pair when the request is blocked (CORS) or the response shape changes.
+async function resolvePusherCredentials() {
+  try {
+    const response = await fetch(realtimeConnectionUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-app-platform": "web"
+      },
+      body: JSON.stringify({
+        client: { id: randomClientId(), type: "web" },
+        capabilities: { accepted_providers: [{ provider: "pusher" }] }
+      })
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const payload = await response.json();
+    const connection = (payload?.data?.connections || []).find(
+      (entry) => entry.provider === "pusher"
+    );
+    const appKey = connection?.credentials?.app_key;
+    const cluster = connection?.credentials?.cluster;
+    if (!appKey || !cluster) throw new Error("Pusher credentials missing");
+    console.log("Fetched Pusher credentials from Kick.");
+    return { appKey, cluster };
+  } catch (error) {
+    console.warn(
+      "Could not fetch Pusher credentials, using fallback key:",
+      error.message
+    );
+    return fallbackPusherCredentials;
+  }
+}
 
 // Function to establish a WebSocket connection
-function connectWebSocket() {
-  kickWS = new WebSocket(kickWSUri);
+async function connectWebSocket() {
+  if (reconnectTimer) {
+    clearTimeout(reconnectTimer);
+    reconnectTimer = null;
+  }
+
+  // Each connect is a new generation; a slow credential lookup must not open a
+  // socket after a newer connect has already started.
+  const generation = ++socketGeneration;
+  const credentials = await resolvePusherCredentials();
+  if (generation !== socketGeneration) return;
+
+  const ws = new WebSocket(buildPusherUrl(credentials));
+  kickWS = ws;
 
   // Listen for open, error and close events
-  kickWS.addEventListener("open", handleWebSocketOpen);
-  kickWS.addEventListener("error", handleWebSocketError);
-  kickWS.addEventListener("close", handleWebSocketClose);
-  kickWS.addEventListener("message", handleWebSocketMessage);
+  ws.addEventListener("open", () => handleWebSocketOpen(ws));
+  ws.addEventListener("error", () => handleWebSocketError(ws));
+  ws.addEventListener("close", (event) => handleWebSocketClose(ws, event));
+  ws.addEventListener("message", handleWebSocketMessage);
 }
 
-function closeWebSocket() {
-  kickWS.close();
+// Single reconnect path. Both `error` and `close` fire for the same failure, so
+// we only act for the socket that is still current, and re-resolve credentials
+// on every attempt — a rejected key must not be retried in a tight loop.
+function scheduleReconnect(ws, reason) {
+  if (kickWS !== ws) return;
+  kickWS = null;
+
+  const delay = Math.min(1000 * 2 ** reconnectAttempts, 15000);
+  reconnectAttempts += 1;
+  console.log(
+    `WebSocket ${reason}. Reconnecting in ${delay}ms (attempt ${reconnectAttempts})...`
+  );
+  reconnectTimer = setTimeout(connectWebSocket, delay);
 }
 
-// Handle WebSocket open event
-async function handleWebSocketOpen() {
+// Handle WebSocket open event. Opening is not proof of a healthy connection:
+// Pusher accepts the handshake and only then rejects an invalid app key with a
+// 4001 close. So the reconnect backoff is reset when a subscription actually
+// succeeds (see handleWebSocketMessage), not here — otherwise a retired key
+// would retry at a flat 1s forever.
+async function handleWebSocketOpen(ws) {
+  if (kickWS !== ws) return;
+
+  // The channel lookup below awaits, so re-check afterwards: the socket may have
+  // closed in the meantime, and sending then throws InvalidStateError.
   const channelInfo = await getChannelInfo();
+  if (kickWS !== ws || ws.readyState !== WebSocket.OPEN) return;
+
   const chatroomId = channelInfo.chatroomId;
-  kickWS.send(
+  ws.send(
     JSON.stringify({
       event: "pusher:subscribe",
       data: { auth: "", channel: `chatrooms.${chatroomId}.v2` }
@@ -58,7 +150,7 @@ async function handleWebSocketOpen() {
   );
   // Also subscribe to the channel-wide topic — this is where raid/host and
   // some subscription events get published on Kick.
-  kickWS.send(
+  ws.send(
     JSON.stringify({
       event: "pusher:subscribe",
       data: { auth: "", channel: `channel.${channelInfo.channelId}` }
@@ -109,19 +201,13 @@ async function fetchData(url) {
 }
 
 // Handle WebSocket errors
-function handleWebSocketError() {
-  console.log("WebSocket error. Reconnecting...");
-  setTimeout(() => {
-    connectWebSocket();
-  }, 1000);
+function handleWebSocketError(ws) {
+  scheduleReconnect(ws, "error");
 }
 
 // Handle WebSocket disconnection
-function handleWebSocketClose() {
-  console.log("WebSocket disconnected. Reconnecting...");
-  setTimeout(() => {
-    connectWebSocket();
-  }, 1000);
+function handleWebSocketClose(ws, event) {
+  scheduleReconnect(ws, `closed (${event.code})`);
 }
 
 // Bootstrap: require a channel parameter. If missing, render setup help and
@@ -136,6 +222,13 @@ if (!kickChannel) {
 function handleWebSocketMessage(event) {
   // Parse the message data as JSON
   let messageData = JSON.parse(event.data);
+
+  // A successful subscription is the real "healthy connection" signal, so it is
+  // where the reconnect backoff resets.
+  if (messageData.event === "pusher_internal:subscription_succeeded") {
+    reconnectAttempts = 0;
+    return;
+  }
 
   // Check if the message is a ChatMessageEvent
   if (messageData.event === "App\\Events\\ChatMessageEvent") {
